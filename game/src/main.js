@@ -201,6 +201,7 @@ function render() {
 }
 
 if (shotName) {
+  setTimeout(() => { document.title = 'sv-probe:' + (window.__shotReady ? 'ready' : 'stuck') + ':' + (window.__err || 'noerr') + ':p' + (window.__paints || 0); }, 2500);
   try {
     const tOverride = Number.isFinite(tParam) && tParam > 0 ? tParam : undefined;
     ui.state = stageShot(shotName, world, tOverride);
@@ -210,6 +211,7 @@ if (shotName) {
   }
   let painted = 0;
   function paintShot() {
+    window.__paints = painted;
     render();
     painted += 1;
     if (painted < 3) requestAnimationFrame(paintShot);

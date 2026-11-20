@@ -99,6 +99,17 @@ function updateCopCar(world, car, dt) {
   if (playerOnFoot && d < 230) throttle = 0;
   else if (d < 320) throttle = 0.75;
   if (Math.abs(diff) > 1.1) throttle = Math.min(throttle, 0.4);
+  if (throttle > 0.5 && car.speed < 30) car.stuckT = (car.stuckT || 0) + dt;
+  else car.stuckT = 0;
+  if ((car.stuckT || 0) > 1.2) {
+    car.reverseT = 0.8;
+    car.stuckT = 0;
+  }
+  if ((car.reverseT || 0) > 0) {
+    car.reverseT -= dt;
+    driveKinematics(world, car, dt, -0.9, -clamp(diff * 2, -1, 1), false);
+    return;
+  }
   const steer = clamp(diff * 2.4, -1, 1);
   driveKinematics(world, car, dt, throttle, steer, false);
   car.speed = Math.hypot(car.vx, car.vy);

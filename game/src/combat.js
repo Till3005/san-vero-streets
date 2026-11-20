@@ -35,6 +35,12 @@ export function panicArea(world, x, y, radius) {
   for (const car of world.cars) {
     if (car.control === 'ai' && !car.dead && Math.hypot(car.x - x, car.y - y) < radius * 1.4) car.panicT = 6;
   }
+  for (const b of world.pigeons || []) {
+    if (!b.gone && Math.hypot(b.x - x, b.y - y) < radius) {
+      b.fly = 1.2;
+      b.wander = Math.atan2(b.y - y, b.x - x);
+    }
+  }
 }
 
 function witnessShot(world, x, y) {

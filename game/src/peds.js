@@ -98,6 +98,47 @@ function randomSidewalkSpot(world, cx, cy, minD, maxD) {
   return null;
 }
 
+export function spawnPigeons(world, dt) {
+  world.pigeonT = (world.pigeonT || 0) - dt;
+  world.pigeons = world.pigeons || [];
+  const focus = worldFocus(world);
+  let alive = 0;
+  for (const b of world.pigeons) if (!b.gone) alive += 1;
+  if (world.pigeonT <= 0 && alive < 10) {
+    world.pigeonT = 0.6;
+    const spot = randomSidewalkSpot(world, focus.x, focus.y, 100, 520);
+    if (spot) world.pigeons.push({ x: spot.x, y: spot.y, wander: world.rng.next() * Math.PI * 2, hopT: 0, fly: 0, gone: false });
+  }
+}
+
+export function updatePigeons(world, dt) {
+  const focus = worldFocus(world);
+  const list = world.pigeons || [];
+  for (let i = list.length - 1; i >= 0; i -= 1) {
+    const b = list[i];
+    if (b.gone) { list.splice(i, 1); continue; }
+    if (b.fly > 0) {
+      b.fly -= dt;
+      b.x += Math.cos(b.wander) * 300 * dt;
+      b.y += Math.sin(b.wander) * 300 * dt;
+      if (b.fly <= 0) b.gone = true;
+      continue;
+    }
+    if (Math.hypot(b.x - focus.x, b.y - focus.y) < 74) {
+      b.fly = 1.1;
+      b.wander = Math.atan2(b.y - focus.y, b.x - focus.x);
+      continue;
+    }
+    if (world.rng.chance(0.02)) b.wander += (world.rng.next() - 0.5) * 1.6;
+    b.hopT = Math.max(0, (b.hopT || 0) - dt);
+    if (b.hopT <= 0 && world.rng.chance(0.04)) b.hopT = 0.35;
+    if (b.hopT > 0) {
+      b.x += Math.cos(b.wander) * 42 * dt;
+      b.y += Math.sin(b.wander) * 42 * dt;
+    }
+  }
+}
+
 export function spawnGang(world, x, y, n, tag) {
   for (let i = 0; i < n; i += 1) {
     const a = (i / n) * Math.PI * 2 + world.rng.next();

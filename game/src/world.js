@@ -4,7 +4,7 @@ import { createRandom, clamp } from './random.js';
 import { createFx, updateFx, float } from './fx.js';
 import { createAudio } from './audio.js';
 import { spawnParkedCars, spawnTraffic, updateCars, worldFocus } from './cars.js';
-import { spawnPeds, updatePeds } from './peds.js';
+import { spawnPeds, updatePeds, spawnPigeons, updatePigeons } from './peds.js';
 import { updateCops, clearCops, resetWanted } from './police.js';
 import { updatePlayer, exitCar } from './player.js';
 import { updateBullets } from './combat.js';
@@ -103,6 +103,8 @@ export function step(world, input, dt) {
   updateConvoy(world, dt);
   spawnPeds(world, dt);
   updatePeds(world, dt);
+  spawnPigeons(world, dt);
+  updatePigeons(world, dt);
   updateBullets(world, dt);
   updateMissions(world, dt);
   if (world.muzzle) {

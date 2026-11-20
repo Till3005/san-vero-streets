@@ -17,6 +17,12 @@ function rr(ctx, x, y, w, h, r) {
 }
 
 function drawSignalBox(ctx, x, y, nsGreen) {
+  ctx.strokeStyle = '#3a3f46';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(x + 5, y + 18);
+  ctx.lineTo(x + 5, y + 27);
+  ctx.stroke();
   ctx.fillStyle = 'rgba(20,23,30,0.85)';
   rr(ctx, x, y, 10, 18, 3);
   ctx.fill();
@@ -52,6 +58,7 @@ export function draw(ctx, world, ui, mm) {
   for (const ped of world.peds) {
     if (!ped.dead) drawPed(ctx, world, ped, false);
   }
+  for (const b of world.pigeons || []) drawPigeon(ctx, world, b);
   if (!world.player.inCar) drawPed(ctx, world, world.player, true);
   drawBuildings(ctx, world, vx0, vy0, vx1, vy1);
   drawCanopy(ctx, world, vx0, vy0, vx1, vy1);
@@ -224,6 +231,15 @@ function drawGround(ctx, world, vx0, vy0, vx1, vy1) {
           ctx.fillStyle = 'rgba(210,235,250,0.28)';
           ctx.fillRect(x + 8, y + 22 + ph * 5, 22, 2.5);
           ctx.fillRect(x + 26, y + 12 + ph * 4, 12, 2);
+        }
+        const codes2 = codes;
+        const shore = (tx > 0 && codes2[ty * WTILES + tx - 1] === 5) || (ty > 0 && codes2[(ty - 1) * WTILES + tx] === 5)
+          || (tx < WTILES - 1 && codes2[ty * WTILES + tx + 1] === 5) || (ty < WTILES - 1 && codes2[(ty + 1) * WTILES + tx] === 5);
+        if (shore) {
+          const fo = Math.sin(t * 2.1 + tx * 0.8 + ty * 1.2);
+          ctx.fillStyle = `rgba(235,246,252,${0.3 + fo * 0.18})`;
+          ctx.fillRect(x + 4, y + 20 + fo * 5, 26, 2.5);
+          ctx.fillRect(x + 14, y + 34 - fo * 4, 20, 2);
         }
       } else if (code === 7) {
         ctx.fillStyle = COLORS.bridge;
@@ -505,6 +521,50 @@ function drawCorpses(ctx, world) {
     ctx.restore();
   }
   ctx.globalAlpha = 1;
+}
+
+function drawPigeon(ctx, world, b) {
+  const lift = b.fly > 0 ? Math.min(18, (1.2 - b.fly) * 18) : 0;
+  const flap = b.fly > 0 ? Math.sin(world.time * 42) * 4 : 0;
+  ctx.save();
+  ctx.translate(b.x, b.y - lift);
+  ctx.fillStyle = 'rgba(18,24,34,0.22)';
+  ctx.beginPath();
+  ctx.ellipse(2, 2 + lift * 0.5, 5, 3, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.rotate(b.wander);
+  ctx.fillStyle = '#7d8794';
+  ctx.beginPath();
+  ctx.ellipse(0, 0, 5, 3.2, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#9aa4b0';
+  ctx.beginPath();
+  ctx.arc(4.6, 0, 2.2, 0, Math.PI * 2);
+  ctx.fill();
+  if (b.fly > 0) {
+    ctx.strokeStyle = '#6d7684';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(-1, -2);
+    ctx.lineTo(-4, -2 - flap);
+    ctx.moveTo(-1, 2);
+    ctx.lineTo(-4, 2 + flap);
+    ctx.stroke();
+  } else {
+    ctx.fillStyle = '#5f8f6a';
+    ctx.beginPath();
+    ctx.arc(3, 0, 1.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#c98a4b';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(-1, -1.4);
+    ctx.lineTo(-3, -1.4);
+    ctx.moveTo(-1, 1.4);
+    ctx.lineTo(-3, 1.4);
+    ctx.stroke();
+  }
+  ctx.restore();
 }
 
 function drawCar(ctx, world, car) {
